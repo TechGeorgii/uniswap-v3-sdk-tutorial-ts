@@ -1,8 +1,9 @@
 # uniswap-v3-sdk-tutorial
-Uniswap V3 SDK tutorial in TypeScript, Ethers.js
+Uniswap V3 SDK tutorial in TypeScript, Ethers.js. Swapping tokens on EVM-compatible blockchains: Mainnet, Polygon, testnets Goerli, Rinkeby.
 
-Swapping tokens on EVM-compatible blockchains: Mainnet, Polygon, testnets Goerli, Rinkeby.
-
+You can read [blog post](https://techgeorgii.com/uniswap-v3-sdk-tutorial) on this tutorial with detailed explanation.
+\
+\
 To run this example:
 
 1. `npm install` to install dependencies.
