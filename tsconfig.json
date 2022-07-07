@@ -1,0 +1,12 @@
+{
+    "extends": "@tsconfig/node16/tsconfig.json",
+    "compilerOptions": {
+        "resolveJsonModule": true
+    },
+    "include": [
+        "tutorial.ts"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}

@@ -1,0 +1,37 @@
+{
+  "name": "uniswap-v3-sdk-tutorial-ts",
+  "version": "0.1.0",
+  "homepage": "https://techgeorgii.com/uniswap-v3-sdk-tutorial",
+  "description": "Uniswap V3 SDK tutorial. Changing tokens on Mainnet, Polygon, Rinkeby, Kovan networks",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TechGeorgii/uniswap-v3-sdk-tutorial-ts.git"
+  },
+  "author": "Georgii Savchenko (TechGeorgii)",
+  "bugs": {
+    "url": "https://github.com/TechGeorgii/uniswap-v3-sdk-tutorial-ts/issues"
+  },
+  "dependencies": {
+    "@uniswap/sdk-core": "^3.0.1",
+    "@uniswap/smart-order-router": "^2.5.30",
+    "@uniswap/v3-sdk": "^3.8.3",
+    "dotenv": "^16.0.1",
+    "ethers": "^5.6.9",
+    "yargs": "^17.5.1",
+    "@types/yargs": "^17.0.10"
+  },
+  "scripts-comments": {
+    "start-matic": "In: WETH, out: USDT",
+    "start-rinkeby": "In: USDT, out: WETH",
+    "start-goerli": "In: WETH, out: UNI"
+  },
+  "scripts": {
+    "start-matic": "ts-node ./tutorial.ts --chain-id 137 --amount-in 0.0001 --token-in-address 0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619 --token-out-address 0xc2132D05D31c914a87C6611C10748AEb04B58e8F --wallet-address [YOUR_WALLET_ADDRESS]",
+    "start-rinkeby": "ts-node ./tutorial.ts --chain-id 4 --amount-in 5000 --token-in-address 0xd9ba894e0097f8cc2bbc9d24d308b98e36dc6d02 --token-out-address 0xc778417E063141139Fce010982780140Aa0cD5Ab --wallet-address [YOUR_WALLET_ADDRESS]",
+    "start-goerli": "ts-node ./tutorial.ts --chain-id 5 --amount-in 0.0005 --token-in-address 0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6 --token-out-address 0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984 --wallet-address [YOUR_WALLET_ADDRESS]"
+  },
+  "devDependencies": {
+    "@tsconfig/node16": "^1.0.3",
+    "ts-node": "^10.8.2"
+  }
+}
