@@ -1,7 +1,5 @@
-# uniswap-v3-sdk-tutorial
-Uniswap V3 SDK tutorial in TypeScript, Ethers.js. Swapping tokens on EVM-compatible blockchains: Mainnet, Polygon, testnets Goerli, Rinkeby.
-
-You can read [blog post](https://techgeorgii.com/uniswap-v3-sdk-tutorial) on this tutorial with detailed explanation.
+# Uniswap V3 SDK tutorial in TypeScript, Ethers.js
+Swapping tokens on EVM-compatible blockchains: Mainnet, Polygon, testnets Goerli, Rinkeby. You can read [blog post](https://techgeorgii.com/uniswap-v3-sdk-tutorial) on this tutorial with detailed explanation.
 \
 \
 To run this example:
@@ -31,6 +29,7 @@ To run this example:
    Please note the tutorial is for demostration purposes and it misses lots of checks.
 
 
+\
 Happy hacking!
 
 If you have a question or something does not work, you can ask in comment section in [my blog](https://techgeorgii.com/uniswap-v3-sdk-tutorial) or post an [issue](https://github.com/TechGeorgii/uniswap-v3-sdk-tutorial-ts/issues).
