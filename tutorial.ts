@@ -150,12 +150,13 @@ async function main() {
     // ============= PART 3 --- Giving a quote for user input
     console.log("Loading up quote for a swap...");
 
+    const amountIn = ethers.utils.parseUnits(inAmountStr, tokenIn.decimals);
+
     // this is Uniswap quoter smart contract, same address on all chains
     // (from https://docs.uniswap.org/protocol/reference/deployments)
     const UNISWAP_QUOTER_ADDRESS = '0xb27308f9F90D607463bb33eA1BeBb41C27CE5AB6'
     const quoterContract = new ethers.Contract(UNISWAP_QUOTER_ADDRESS, QuoterABI.abi, provider);
 
-    const amountIn = ethers.utils.parseUnits(inAmountStr, tokenIn.decimals);
     const quotedAmountOut = await quoterContract.callStatic.quoteExactInputSingle(
         tokenIn.address,
         tokenOut.address,
@@ -164,41 +165,11 @@ async function main() {
         0
     );
 
-    const multiplyGasPrice = function (gasPriceWei: ethers.BigNumber) {
-        return gasPriceWei.add(gasPriceWei.div(2)); // * 1.5
-    };
-
     console.log(`   You'll get approximately ${ethers.utils.formatUnits(quotedAmountOut, tokenOut.decimals)} ${tokenOut.symbol} for ${inAmountStr} ${tokenIn.symbol}`);
     console.log('');
 
 
-    // ============= PART 4 --- Approving amount to take from input token
-    console.log("Approving amount to spend...");
-
-    // address of a swap router
-    const V3_SWAP_ROUTER_ADDRESS = '0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45';
-
-    // For Metamask it will be just "await contractIn.approve(V3_SWAP_ROUTER_ADDRESS, amountIn);"
-    const estimatedGasLimit = await contractIn.estimateGas.approve(V3_SWAP_ROUTER_ADDRESS, amountIn);
-
-    // ERC20 approve that amount to be taken by swap router
-    const approveTxUnsigned = await contractIn.populateTransaction.approve(V3_SWAP_ROUTER_ADDRESS, amountIn);
-    // by default chainid is not set https://ethereum.stackexchange.com/questions/94412/valueerror-code-32000-message-only-replay-protected-eip-155-transac
-    approveTxUnsigned.chainId = chainId;
-    approveTxUnsigned.gasLimit = estimatedGasLimit;
-    // estimated
-    approveTxUnsigned.gasPrice = multiplyGasPrice(await provider.getGasPrice());
-    // nonce is the same as number previous tx
-    approveTxUnsigned.nonce = await provider.getTransactionCount(walletAddress);
-
-    const approveTxSigned = await signer.signTransaction(approveTxUnsigned);
-    const submittedTx = await provider.sendTransaction(approveTxSigned);
-    const approveReceipt = await submittedTx.wait();
-    if (approveReceipt.status === 0)
-        throw new Error("Approve transaction failed");
-
-
-    // ============= PART 5 --- Loading a swap route
+    // ============= PART 4 --- Loading a swap route
     console.log('');
     console.log("Loading a swap route...");
 
@@ -224,7 +195,7 @@ async function main() {
             // WETH – https://rinkeby.etherscan.io/address/0xc778417e063141139fce010982780140aa0cd5ab#readContract
             // DAI – https://rinkeby.etherscan.io/address/0xc7ad46e0b8a400bb3c915120d284aafba8fc4735#readContract (balance of UniswapV2Pair more than 2^112-1)
 
-            //maxSwapsPerPath: 1
+            maxSwapsPerPath: 1 // remove this if you want multi-hop swaps as well.
         }
     );
 
@@ -241,17 +212,44 @@ async function main() {
     console.log(`   Gas Price Wei: ${route.gasPriceWei}`);
     console.log('');
 
-    // // ============= PART 6 --- Making actual swap
+    // // ============= PART 5 --- Making actual swap
+    console.log("Approving amount to spend...");
+
+    // address of a swap router
+    const V3_SWAP_ROUTER_ADDRESS = '0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45';
+
+    // For Metamask it will be just "await contractIn.approve(V3_SWAP_ROUTER_ADDRESS, amountIn);"
+
+    // here we just create a transaction object (not sending it to blockchain).
+    const approveTxUnsigned = await contractIn.populateTransaction.approve(V3_SWAP_ROUTER_ADDRESS, amountIn);
+    // by default chainid is not set https://ethereum.stackexchange.com/questions/94412/valueerror-code-32000-message-only-replay-protected-eip-155-transac
+    approveTxUnsigned.chainId = chainId;
+    // estimate gas required to make approve call (not sending it to blockchain either)
+    approveTxUnsigned.gasLimit = await contractIn.estimateGas.approve(V3_SWAP_ROUTER_ADDRESS, amountIn);
+    // suggested gas price (increase if you want faster execution)
+    approveTxUnsigned.gasPrice = await provider.getGasPrice();
+    // nonce is the same as number previous transactions
+    approveTxUnsigned.nonce = await provider.getTransactionCount(walletAddress);
+
+    // sign transaction by our signer
+    const approveTxSigned = await signer.signTransaction(approveTxUnsigned);
+    // submit transaction to blockchain
+    const submittedTx = await provider.sendTransaction(approveTxSigned);
+    // wait till transaction completes
+    const approveReceipt = await submittedTx.wait();
+    if (approveReceipt.status === 0)
+        throw new Error("Approve transaction failed");
+
+
     console.log("Making a swap...");
     const value = BigNumber.from(route.methodParameters.value);
 
-    const gasPrice = multiplyGasPrice(route.gasPriceWei);
     const transaction = {
         data: route.methodParameters.calldata,
         to: V3_SWAP_ROUTER_ADDRESS,
         value: value,
         from: walletAddress,
-        gasPrice: gasPrice,
+        gasPrice: route.gasPriceWei,
 
         // route.estimatedGasUsed might be too low!
         // most of swaps I tested fit into 300,000 but for some complex swaps this gas is not enough.
